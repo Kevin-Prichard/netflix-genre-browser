@@ -112,7 +112,9 @@ def main(start_nr: int = 0):
                      OR synopsis != ?) """,
             (genre_id, now, AGED_REFRESH, genre_name, synopsis))
 
-        if genre_exists.rowcount < 0:
+        if genre_exists.rowcount > 0:
+            continue
+        else:
             db.execute(
                 """INSERT INTO genre
                    (id, name, synopsis, created, updated)
