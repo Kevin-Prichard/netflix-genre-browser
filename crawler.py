@@ -6,9 +6,8 @@ import time
 from lxml.html import fromstring
 import requests
 import sqlite3
-import requests_cache
-from requests_cache.backends.sqlite import DbCache
 
+MODE = "dev"
 genre_uri_template = "https://www.netflix.com/browse/genre/%d"
 xp_genre_title = "//div[@class='nm-collections-metadata-title']"
 xp_genre_synopsis = "//div[@class='nm-collections-metadata-synopsis']"
@@ -60,16 +59,19 @@ def create_db(pathname):
 
 
 def main(start_nr: int = 0):
-    db = create_db("./netflix_genres.sqlite3")
+    db = create_db("./netflix_genres.sqlite")
 
     # https://requests-cache.readthedocs.io/
-    sqlite_cache = DbCache(db_path="./requests_cache.sqlite")
-    requests_cache.install_cache(
-        cache_name="http_cache",
-        backend=sqlite_cache,
-        expire_after=-1,  # never expire
-        allowable_codes=(200, 301, 404),  # cache responses for these codes
-    )
+    if MODE == "dev":
+        import requests_cache
+        from requests_cache.backends.sqlite import DbCache
+        sqlite_cache = DbCache(db_path="./requests_cache.sqlite")
+        requests_cache.install_cache(
+            cache_name="http_cache",
+            backend=sqlite_cache,
+            expire_after=-1,  # never expire
+            allowable_codes=(200, 301, 404),  # cache responses for these codes
+        )
 
     for genre_id in range(start_nr, int(1e6)):
         title_insert_buffer = []
